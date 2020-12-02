@@ -1,0 +1,114 @@
+<html>
+    <head>
+        <title>
+            Chat Client
+        </title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+        <style>
+            body {
+                margin:0px;
+                background-color:rgb(87, 90, 107);
+                padding-bottom:100px;
+            }
+            #input {
+                margin:5px;
+                border-style:solid;
+                border-color:rgb(57, 56, 79);
+                background-color:rgb(65, 64, 87);
+                padding:5px;
+                color:white;
+                height:40px;
+                width:93%;
+                position:fixed;
+                top:100px;
+                font-family: 'Open Sans', sans-serif;
+                border-radius:3px;
+            }
+            #button {
+                margin:5px;
+                border-style:solid;
+                border-color:rgb(91, 138, 194);
+                background-color:rgb(102, 154, 217);
+                padding:5px;
+                color:white;
+                height:40px;
+                width:5.5%;
+                position:fixed;
+                font-family: 'Open Sans', sans-serif;
+                font-size:20px;
+                border-radius:3px;
+            }
+            #buffer {
+                width:50px;
+                height:50px;
+        </style>
+    </head>
+    
+    <body>
+        <div id="inputField">
+            <input type="feild" id="input" placeholder="send message">
+            <button id="button" onclick="checkInp()"><b>Send</b></button>
+        </div>
+        <script>
+            function updatePos() {
+                document.getElementById("input").style.top = window.innerHeight - 50 + "px";
+                document.getElementById("button").style.top = window.innerHeight - 50 + "px";
+                document.getElementById("button").style.left = window.innerWidth - window.innerWidth*.0655 + "px";                
+            }
+            updatePos()
+            function Message(inc) {
+                this.message = document.createElement("P")
+                this.date = document.createElement("P")
+                this.container = document.createElement("DIV")
+                this.msgID = Math.random()
+                this.message.id = JSON.stringify(this.msgID)
+                this.container.id = JSON.stringify(this.msgID)
+                this.inc = inc
+                this.container.style = "font-family: 'Open Sans', sans-serif;color:white;position:relative;left:30px;top:10px;z-index:-1;width:" + (innerWidth-40) + "px;"
+                this.message.innerHTML = this.inc
+                this.message.style = "margin-bottom:-4px;"
+                document.body.appendChild(this.container)
+                document.getElementById(this.container.id).appendChild(this.message)
+                this.date2 = new Date()
+                this.date.innerHTML = this.date2
+                this.date.style = "font-size:10px;color:rgb(153,153,153)"
+                document.getElementById(this.container.id).appendChild(this.date)
+            }
+            var messageArray = []
+            var inpu = document.getElementById("input").value
+            function checkInp() {
+                var inpu = document.getElementById("input").value
+                if (inpu.length > 0) {
+					sendMsgPacket(inpu)
+                    document.getElementById("input").value = ""
+                }
+            }
+            window.addEventListener("keydown", function(event) {
+                if (event.which == 13) {
+                    checkInp()   
+                }
+            })
+			function sendMsgPacket(msg) {
+				var g = new XMLHttpRequest();
+				g.open("POST", "?Content=" + msg + "&Type=0", true)
+				g.send()
+			}
+			function waitForResponse() {
+				var wait = new XMLHttpRequest();
+				wait.onload = function() {
+					var s = wait.responseText;
+					var k = JSON.parse(s)
+					if (s[0] == "[") {
+						if (k[1] == 0) {
+							messageArray.push(new Message(k[0]))
+						}
+					}
+					waitForResponse();
+				}	
+				wait.open("POST", "?Type=1");
+				wait.send();
+			}
+			waitForResponse();
+        </script>
+    </body>
+</html>
